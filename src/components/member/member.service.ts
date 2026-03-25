@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Member } from '../../schemas/member.schema';
-import { LoginDto, SignupDto } from '../../libs/dto/member.dto';
+import { LoginDto, SignupDto, UpdateMemberDto } from '../../libs/dto/member.dto';
 import { MemberStatus } from '../../libs/enums/member.enum';
 import { Message } from '../../libs/enums/common.enum';
 
@@ -69,5 +69,31 @@ export class MemberService {
     } catch (error) {
       throw new BadRequestException(Message.NOT_AUTHENTICATED);
     }
+  }
+
+  async getMember(memberId: string): Promise<Member> {
+    const member = await this.memberModel.findById(memberId).select('-password');
+    if (!member) throw new BadRequestException(Message.MEMBER_NOT_FOUND);
+    return member;
+  }
+
+  async updateMember(memberId: string, dto: UpdateMemberDto): Promise<Member> {
+    if (dto.password) {
+      dto.password = await bcrypt.hash(dto.password, 12);
+    }
+
+    const member = await this.memberModel
+      .findByIdAndUpdate(memberId, dto, { new: true })
+      .select('-password');
+    if (!member) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    return member;
+  }
+
+  async removeMember(memberId: string): Promise<Member> {
+    const member = await this.memberModel
+      .findByIdAndUpdate(memberId, { memberStatus: MemberStatus.DELETE }, { new: true })
+      .select('-password');
+    if (!member) throw new InternalServerErrorException(Message.REMOVE_FAILED);
+    return member;
   }
 }

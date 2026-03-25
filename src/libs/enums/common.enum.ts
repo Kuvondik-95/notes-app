@@ -10,6 +10,9 @@ export enum Message {
   WRONG_PASSWORD = 'Wrong password!',
   MEMBER_BLOCKED = 'Your account has been blocked!',
 
+  UPDATE_FAILED = 'Failed to update member!',
+  REMOVE_FAILED = 'Failed to remove member!',
+
   // General
   SOMETHING_WENT_WRONG = 'Something went wrong!',
 }
